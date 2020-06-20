@@ -9,13 +9,21 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var usedWords = [String]()
+    @State var usedWords = [String]()
     @State private var rootWord = ""
     @State private var newWord = ""
     
     @State private var errorTitle = ""
     @State private var errorMessage = ""
     @State private var showingError = false
+    
+   var score: Int {
+        var score = 0
+            for word in usedWords{
+                score += word.count
+            }
+        return score
+    }
     
     var body: some View {
         NavigationView{
@@ -29,8 +37,21 @@ struct ContentView: View {
                     Image(systemName: "\($0.count).circle")
                     Text($0)
                 }
+                
+                Text("Your score is: \(score)")
             }
             .navigationBarTitle(rootWord)
+            .navigationBarItems(trailing: Button("Restart Game")
+            {
+                self.startGame()
+                }
+            .frame(minWidth: 0, maxWidth: .infinity)
+            .padding()
+            .foregroundColor(.white)
+            .background(LinearGradient(gradient: Gradient(colors: [.green, .yellow]), startPoint: .top, endPoint: .bottom))
+            .cornerRadius(20)
+        )
+            
             .onAppear(perform: startGame)
             .alert(isPresented: $showingError) {
                 Alert(title: Text(errorTitle), message: Text(errorMessage), dismissButton: .default(Text("OK")))
@@ -41,7 +62,12 @@ struct ContentView: View {
     func addNewWord() {
         let answer = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         
-        guard answer.count > 0 else {
+        guard answer.count > 2 else {
+            return
+        }
+        
+        if(answer == rootWord){
+            wordError(title:"Word is the Root Word", message: "That word is the same as the root word")
             return
         }
         
